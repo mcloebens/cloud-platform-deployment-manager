@@ -935,8 +935,9 @@ func parseCertificateInfo(spec *SystemSpec, certificates []certificates.Certific
 	result := make([]CertificateInfo, 0)
 
 	for index, c := range certificates {
-		// Ignore OpenLDAP certificate since it's being installed during the initial unlock.
-		if c.Type == "openldap" {
+		// Ignore the OpenLDAP/Docker/Platform certificates installed during bootstrap/initial unlock
+		if c.Type == OpenLDAPCertificate || c.Type == DockerCertificate ||
+			c.Type == PlatformCertificate {
 			continue
 		}
 		cert := CertificateInfo{
@@ -950,8 +951,12 @@ func parseCertificateInfo(spec *SystemSpec, certificates []certificates.Certific
 		result = append(result, cert)
 	}
 
-	list := CertificateList(result)
-	spec.Certificates = &list
+	if len(result) > 0 {
+		list := CertificateList(result)
+		spec.Certificates = &list
+	} else {
+		spec.Certificates = nil
+	}
 
 	return nil
 }

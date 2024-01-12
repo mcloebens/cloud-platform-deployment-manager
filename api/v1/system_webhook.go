@@ -142,6 +142,12 @@ func validateStorage(obj *System) error {
 func validateCertificates(obj *System) error {
 	if obj.Spec.Certificates != nil {
 		for _, c := range *obj.Spec.Certificates {
+			// Ignore the OpenLDAP/Docker/Platform certificates installed during bootstrap/initial unlock
+			if c.Type == OpenLDAPCertificate || c.Type == DockerCertificate ||
+				c.Type == PlatformCertificate {
+				continue
+			}
+
 			secret := &corev1.Secret{}
 			secretName := apitypes.NamespacedName{Name: c.Secret, Namespace: obj.ObjectMeta.Namespace}
 			found := false
