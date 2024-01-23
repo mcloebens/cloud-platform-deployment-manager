@@ -181,6 +181,17 @@ func ReadConfig() (err error) {
 	return err
 }
 
+func IsCreatePlatformCertificatesEnabled() bool {
+	value := cfg.GetBool("create_platform_certificates")
+	if !value {
+		log.Info("Create_platform_certificates is disabled")
+	} else {
+		log.Info("Create_platform_certificates is enabled")
+	}
+
+	return value
+}
+
 // IsReconcilerEnabled returns whether a specific reconciler is enabled or
 // not.
 func IsReconcilerEnabled(name ReconcilerName) bool {

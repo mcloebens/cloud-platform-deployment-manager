@@ -153,6 +153,15 @@
       set_fact:
         config_permdir: "{{ platform_path + '/config/' + software_version }}"
 
+    - name: Retrieve environment variable
+      stat:
+        path: "{{ config_permdir }}/.create_platform_certificates"
+      register: helm_chart_env_var
+
+    - name: Set environment variable
+      set_fact:
+        create_platform_certificates: "{{ helm_chart_env_var.stat.exists }}"  
+
     # Check if DM already exists in either helmv2 or helmv3
     - name: Get list of releases in helmv2
       command: >-
@@ -253,6 +262,7 @@
           --install deployment-manager
           --values /tmp/{{ helm_chart_overrides | basename }}
           /tmp/{{ manager_chart | basename }}
+          --set create_platform_certificates="{{ create_platform_certificates }}"
         environment:
           KUBECONFIG: "/etc/kubernetes/admin.conf"
 
@@ -304,7 +314,7 @@
       when: helmv3_installed and helmv3_dm_exists.rc == 0
 
     - name: Install Deployment Manager
-      shell: KUBECONFIG=/etc/kubernetes/admin.conf /usr/sbin/helm upgrade --install deployment-manager {% if helm_chart_overrides is defined %}--values {{ helm_chart_overrides }}{% endif %} {{ manager_chart }}
+      shell: KUBECONFIG=/etc/kubernetes/admin.conf /usr/sbin/helm upgrade --install deployment-manager {% if helm_chart_overrides is defined %}--values {{ helm_chart_overrides }}{% endif %} {{ manager_chart }} --set create_platform_certificates="{{ create_platform_certificates }}"
       when: helmv3_installed
 
     # Install or Upgrade DM-Monitor
